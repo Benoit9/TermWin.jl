@@ -21,22 +21,17 @@ F6         : popup window for value
 F7         : popup window for leaf & root node stats
 """
 defaultTableBottomText = "F1:help p:Pivot c:ColOrd v:Views"
-if VERSION < v"0.4.0-dev+1930"
-    @lintpragma( "DataFrame is a container type" )
-    @lintpragma( "AbstractDataFrame is a container type" )
-else
-    @lintpragma( "DataFrames.DataFrame is a container type" )
-    @lintpragma( "DataFrames.AbstractDataFrame is a container type" )
-end
+@lintpragma( "DataFrames.DataFrame is a container type" )
+@lintpragma( "DataFrames.AbstractDataFrame is a container type" )
 
-type TwTableColInfo
+mutable struct TwTableColInfo
     name::Symbol
     displayname::String
     format::FormatHints
     aggr::Any
 end
 
-type TwDfTableNode
+mutable struct TwDfTableNode
     parent::WeakRef
     context::WeakRef
     pivotcols::Array{ Symbol, 1 }
@@ -74,10 +69,10 @@ function getindex( n::TwDfTableNode, c::Symbol )
     end
 end
 
-type TwTableView
+mutable struct TwTableView
     name::String
     pivots::Array{Symbol,1}
-    sortorder::Array{ (@compat Tuple{Symbol,Symbol}), 1 } # [ (:col1, :asc ), (:col2, :desc), ... ]
+    sortorder::Array{ (Tuple{Symbol,Symbol}), 1 } # [ (:col1, :asc ), (:col2, :desc), ... ]
     columns::Array{ Symbol, 1 }
     initdepth::Int
 end
@@ -141,8 +136,8 @@ function TwTableView( df::AbstractDataFrame, name::String;
     move_columns( removed, hidecols, finalcolorder )
 
     if eltype( sortorder ) == Symbol
-        actualsortorder = (@compat Tuple{Symbol,Symbol})[ (s,:asc) for s in sortorder ]
-    elseif eltype( sortorder ) == @compat Tuple{Symbol,Symbol}
+        actualsortorder = (Tuple{Symbol,Symbol})[ (s,:asc) for s in sortorder ]
+    elseif eltype( sortorder ) == Tuple{Symbol,Symbol}
         actualsortorder = sortorder
     else
         error( "sortorder eltype expects Symbol, or Tuple{Symbol,Symbol}: " * string( eltype( sortorder ) ) )
@@ -153,10 +148,10 @@ end
 
 # this is the widget data. all subnodes hold a weakref back to this to
 # facilitate aggregation, ordering and output
-type TwDfTableData
+mutable struct TwDfTableData
     rootnode::TwDfTableNode
     pivots::Array{ Symbol, 1 }
-    sortorder::Array{ (@compat Tuple{Symbol,Symbol}), 1 } # [ (:col1, :asc ), (:col2, :desc), ... ]
+    sortorder::Array{ (Tuple{Symbol,Symbol}), 1 } # [ (:col1, :asc ), (:col2, :desc), ... ]
     datalist::Array{Any, 1} # (tuple{symbol}, 0) -> node, (tuple{symbol},#) -> row within that sub-df
     datalistlen::Int
     datatreewidth::Int
@@ -448,7 +443,7 @@ function draw( o::TwObj{TwDfTableData} )
     box( o.window, 0,0 )
     if !isempty( o.title )
         titlestr = o.title
-        mvwprintw( o.window, 0, (@compat round(Int, ( o.width - length(titlestr) )/2 )), "%s", titlestr )
+        mvwprintw( o.window, 0, (round(Int, ( o.width - length(titlestr) )/2 )), "%s", titlestr )
     end
     if o.data.datalistlen <= viewContentHeight
         msg = "ALL"
@@ -531,9 +526,9 @@ function draw( o::TwObj{TwDfTableData} )
             mvwaddch( o.window, o.data.headerlines + 1+r-o.data.currentTop, 2*stacklen+1, get_acs_val('q') ) # horizontal line
         end
         if o.data.datalist[r][3] == :close
-            mvwprintw( o.window, o.data.headerlines + 1+r-o.data.currentTop, 2*stacklen+2, "%s", string( @compat Char( 0x25b8 ) ) ) # right-pointing small triangle
+            mvwprintw( o.window, o.data.headerlines + 1+r-o.data.currentTop, 2*stacklen+2, "%s", string( Char( 0x25b8 ) ) ) # right-pointing small triangle
         elseif o.data.datalist[r][3] == :open
-            mvwprintw( o.window, o.data.headerlines + 1+r-o.data.currentTop, 2*stacklen+2, "%s", string( @compat Char( 0x25be ) ) ) # down-pointing small triangle
+            mvwprintw( o.window, o.data.headerlines + 1+r-o.data.currentTop, 2*stacklen+2, "%s", string( Char( 0x25be ) ) ) # down-pointing small triangle
         end
 
         if r == o.data.currentLine
@@ -943,9 +938,9 @@ function inject( o::TwObj{TwDfTableData}, token )
     elseif token == :KEY_MOUSE
         (mstate,x,y, bs ) = getmouse()
         if mstate == :scroll_up
-            dorefresh = movevertical( -(@compat round(Int, viewContentHeight/10 )) )
+            dorefresh = movevertical( -(round(Int, viewContentHeight/10 )) )
         elseif mstate == :scroll_down
-            dorefresh = movevertical( (@compat round(Int, viewContentHeight/10 )) )
+            dorefresh = movevertical( (round(Int, viewContentHeight/10 )) )
         elseif mstate == :button1_pressed
             rely, relx = screen_to_relative( o.window, y, x )
             if 1<=relx<o.width-1 && o.data.headerlines<rely<o.height-1
