@@ -26,7 +26,7 @@ typefields[ TypeName ] = [ :name, :module, :primary ]
 treeTypeMaxWidth = 30
 treeValueMaxWidth = 40
 
-type TwTreeData
+mutable struct TwTreeData
     openstatemap::Dict{ Any, Bool }
     datalist::Array{Any, 1}
     datalistlen::Int
@@ -80,7 +80,7 @@ end
 # skiplines are hints where we should not draw the vertical lines to the left
 # because it corresponds the end of some list at a lower depth level
 
-function tree_data{T}( x::Any, name::String, list::Array{T,1}, openstatemap::Dict{ Any, Bool }, stack::Array{Any,1}, skiplines::Array{Int,1}=Int[], moduleall::Bool = true )
+function tree_data( x::Any, name::String, list::Array{T,1}, openstatemap::Dict{ Any, Bool }, stack::Array{Any,1}, skiplines::Array{Int,1}=Int[], moduleall::Bool = true ) where T
     global modulenames, typefields
     isexp = haskey( openstatemap, stack ) && openstatemap[ stack ]
     typx = typeof( x )
@@ -116,7 +116,7 @@ function tree_data{T}( x::Any, name::String, list::Array{T,1}, openstatemap::Dic
     elseif typx == WeakRef
         s = string( name )
         t = string( typx )
-        v = x.value == nothing? "<nothing>" : @sprintf( "id:0x%x", object_id( x.value ) )
+        v = x.value == nothing ? "<nothing>" : @sprintf( "id:0x%x", object_id( x.value ) )
         push!( list, (s, t, v, stack, :single, skiplines ) )
     elseif typx <: Array || typx <: Tuple
         s = string( name )
@@ -312,7 +312,7 @@ function draw( o::TwObj{TwTreeData} )
                 titlestr *= "(exported )"
             end
         end
-        mvwprintw( o.window, 0, (@compat round(Int,( o.width - length(titlestr) )/2 )), "%s", titlestr )
+        mvwprintw( o.window, 0, (round(Int,( o.width - length(titlestr) )/2 )), "%s", titlestr )
     end
     if o.data.showLineInfo && o.box
         if o.data.datalistlen <= viewContentHeight
@@ -356,9 +356,9 @@ function draw( o::TwObj{TwTreeData} )
             mvwaddch( o.window, 1+r-o.data.currentTop, 2*stacklen+1, get_acs_val('q') ) # horizontal line
         end
         if o.data.datalist[r][5] == :close
-            mvwprintw( o.window, 1+r-o.data.currentTop, 2*stacklen+2, "%s", string( @compat Char( 0x25b8 ) ) ) # right-pointing small triangle
+            mvwprintw( o.window, 1+r-o.data.currentTop, 2*stacklen+2, "%s", string( Char( 0x25b8 ) ) ) # right-pointing small triangle
         elseif o.data.datalist[r][5] == :open
-            mvwprintw( o.window, 1+r-o.data.currentTop, 2*stacklen+2, "%s", string( @compat Char( 0x25be ) ) ) # down-pointing small triangle
+            mvwprintw( o.window, 1+r-o.data.currentTop, 2*stacklen+2, "%s", string( Char( 0x25be ) ) ) # down-pointing small triangle
         end
 
         if r == o.data.currentLine
@@ -366,7 +366,7 @@ function draw( o::TwObj{TwTreeData} )
         end
     end
     if length( o.data.bottomText ) != 0 && o.box
-        mvwprintw( o.window, o.height-1, (@compat round(Int, (o.width - length(o.data.bottomText))/2 )), "%s", o.data.bottomText )
+        mvwprintw( o.window, o.height-1, (round(Int, (o.width - length(o.data.bottomText))/2 )), "%s", o.data.bottomText )
     end
 end
 
@@ -463,7 +463,7 @@ function inject( o::TwObj{TwTreeData}, token )
                 if currentstack == o.data.datalist[ i ][4]
                     o.data.currentLine = i
                     if abs( i - prevline ) > viewContentHeight
-                        o.data.currentTop = i - @compat round(Int,viewContentHeight/2)
+                        o.data.currentTop = i - round(Int,viewContentHeight/2)
                     end
                     break
                 end
@@ -499,7 +499,7 @@ function inject( o::TwObj{TwTreeData}, token )
                     if currentstack == o.data.datalist[ i ][4]
                         o.data.currentLine = i
                         if abs( i-prevline ) > viewContentHeight
-                            o.data.currentTop = i - @compat round(Int,viewContentHeight / 2)
+                            o.data.currentTop = i - round(Int,viewContentHeight / 2)
                         end
                         break
                     end
@@ -524,7 +524,7 @@ function inject( o::TwObj{TwTreeData}, token )
             if currentstack == o.data.datalist[ i ][4]
                 o.data.currentLine = i
                 if abs( i-prevline ) > viewContentHeight
-                    o.data.currentTop = o.data.currentLine - @compat round(Int,viewContentHeight / 2)
+                    o.data.currentTop = o.data.currentLine - round(Int,viewContentHeight / 2)
                 end
                 break
             end
@@ -627,9 +627,9 @@ function inject( o::TwObj{TwTreeData}, token )
     elseif token == :KEY_MOUSE
         (mstate,x,y, bs ) = getmouse()
         if mstate == :scroll_up
-            dorefresh = moveby( -(@compat round(Int, viewContentHeight/5 ) ))
+            dorefresh = moveby( -(round(Int, viewContentHeight/5 ) ))
         elseif mstate == :scroll_down
-            dorefresh = moveby( @compat round(Int, viewContentHeight/5 ) )
+            dorefresh = moveby( round(Int, viewContentHeight/5 ) )
         elseif mstate == :button1_pressed
             begy,begx = getwinbegyx( o.window )
             relx = x - begx
@@ -676,7 +676,7 @@ function inject( o::TwObj{TwTreeData}, token )
             beep()
         end
     elseif token == "L" # move half-way toward the end
-        target = min( (@compat round(Int, ceil((o.data.currentLine + o.data.datalistlen)/2))), o.data.datalistlen )
+        target = min( (round(Int, ceil((o.data.currentLine + o.data.datalistlen)/2))), o.data.datalistlen )
         if target != o.data.currentLine
             o.data.currentLine = target
             checkTop()
@@ -685,7 +685,7 @@ function inject( o::TwObj{TwTreeData}, token )
             beep()
         end
     elseif token == "l" # move half-way toward the beginning
-        target = max( (@compat round(Int,floor( o.data.currentLine /2))), 1)
+        target = max( (round(Int,floor( o.data.currentLine /2))), 1)
         if target != o.data.currentLine
             o.data.currentLine = target
             checkTop()

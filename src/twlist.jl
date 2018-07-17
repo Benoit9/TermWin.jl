@@ -85,15 +85,15 @@ function update_list_canvas( o::TwObj{TwListData} )
             end
         end
         if o.data.horizontal
-            o.data.canvasheight = maximum( map( x->objtype(x)==:List? x.data.canvasheight : x.height, ws ) )
-            o.data.canvaswidth = sum( map( x->objtype(x)==:List? x.data.canvaswidth : x.width, ws ) )
+            o.data.canvasheight = maximum( map( x->objtype(x)==:List ? x.data.canvasheight : x.height, ws ) )
+            o.data.canvaswidth = sum( map( x->objtype(x)==:List ? x.data.canvaswidth : x.width, ws ) )
         else
-            o.data.canvasheight = sum( map( x->objtype(x)==:List? x.data.canvasheight: x.height, ws ) )
-            o.data.canvaswidth = maximum( map( x->objtype(x)==:List? x.data.canvaswidth : x.width, ws ) )
+            o.data.canvasheight = sum( map( x->objtype(x)==:List ? x.data.canvasheight : x.height, ws ) )
+            o.data.canvaswidth = maximum( map( x->objtype(x)==:List ? x.data.canvaswidth : x.width, ws ) )
         end
         if !(typeof( o.window ) <: Ptr)
-            o.height = o.data.canvasheight + (o.box?2:0)
-            o.width = o.data.canvaswidth + (o.box?2:0)
+            o.height = o.data.canvasheight + (o.box ? 2 : 0)
+            o.width = o.data.canvaswidth + (o.box ? 2 : 0)
         end
     end
     if o.data.pad != nothing
@@ -208,8 +208,8 @@ function ensure_visible_on_canvas( o::TwObj )
     par = win.parent.value
     log( @sprintf( "  actual coord y,x: %d %d", y, x ) )
     @assert objtype( par ) == :List
-    contentwidth = par.width - (par.box?2:0)
-    contentheight = par.height - (par.box?2:0)
+    contentwidth = par.width - (par.box ? 2 : 0)
+    contentheight = par.height - (par.box ? 2 : 0)
     log( @sprintf( "  canvas size     : %d %d", par.data.canvasheight, par.data.canvaswidth ) )
     log( @sprintf( "  window geom     : %d %d", contentheight, contentwidth ) )
     log( @sprintf( "  canvas wind.orig: %d %d", par.data.canvaslocy, par.data.canvaslocx) )
@@ -566,7 +566,7 @@ function geometric_filter( o::TwObj{TwListData}, distfunc::Function,
     end
 end
 
-function updown_arrow_distance( to::(@compat Tuple{Int,Int,Int,Int}), from::(@compat Tuple{Int,Int,Int,Int}), sgn::Int )
+function updown_arrow_distance( to::(Tuple{Int,Int,Int,Int}), from::(Tuple{Int,Int,Int,Int}), sgn::Int )
     tocentx = to[2] + to[4] >> 1
     tocenty = to[1] + to[3] >> 1
 
@@ -587,7 +587,7 @@ function updown_arrow_distance( to::(@compat Tuple{Int,Int,Int,Int}), from::(@co
     return ret
 end
 
-function leftright_arrow_distance( to::(@compat Tuple{Int,Int,Int,Int}), from::(@compat Tuple{Int,Int,Int,Int}),sgn::Int )
+function leftright_arrow_distance( to::(Tuple{Int,Int,Int,Int}), from::(Tuple{Int,Int,Int,Int}),sgn::Int )
     tocentx = to[2] + to[4] >> 1
     tocenty = to[1] + to[3] >> 1
 
@@ -610,7 +610,7 @@ end
 
 # used for mouse click
 # inside the area it returns zero, otherwise it's manhattan distance to the boundary
-function point_from_area( y::Int, x::Int, from::(@compat Tuple{Int,Int,Int,Int}) )
+function point_from_area( y::Int, x::Int, from::(Tuple{Int,Int,Int,Int}) )
     xdist = 0
     if x < from[2]
         xdist += from[2]-x

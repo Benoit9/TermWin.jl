@@ -23,7 +23,7 @@ ctrl-n : move to the next matched item
 ctrl-p : move to the previous matched item
 """
 
-type TwMultiSelectData
+mutable struct TwMultiSelectData
     choices::Array{String,1}
     selected::Array{String,1}
     datalist::Array{Any, 1}
@@ -36,17 +36,17 @@ type TwMultiSelectData
     helpText::String
     TwMultiSelectData( arr::Array{String,1}, selected::Array{String,1} ) = new( arr, selected, Any[], 0, nothing, 1, 1, 1, 0, "" )
 end
-TwMultiSelectData{T<:AbstractString,T2<:AbstractString}( arr::Array{T,1}, selected::Array{T2,1} ) = TwMultiSelectData( map( x->x , arr ), map( x->x, selected ) )
+TwMultiSelectData( arr::Array{T,1}, selected::Array{T2,1} ) where {T<:AbstractString,T2<:AbstractString} = TwMultiSelectData( map( x->x , arr ), map( x->x, selected ) )
 
 # the ways to use it:
 # standalone panel
 # as a subwin as part of another widget (see next function)
 # w include title width, if it's shown on the left
-function newTwMultiSelect{T<:AbstractString}( scr::TwObj, arr::Array{T,1};
+function newTwMultiSelect( scr::TwObj, arr::Array{T,1};
         posy::Any = :center,posx::Any = :center,
         selected = String[],
         title = "", maxwidth = 50, maxheight = 20, minwidth = 25,
-        orderable = false, substrsearch=false )
+        orderable = false, substrsearch=false ) where T<:AbstractString
     obj = TwObj( TwMultiSelectData( arr, String[ string(x) for x in selected ] ), Val{ :MultiSelect } )
     obj.box = true
     obj.title = title
@@ -100,7 +100,7 @@ function draw( o::TwObj{TwMultiSelectData} )
         box( o.window, 0,0 )
     end
     if !isempty( o.title ) && o.box
-        mvwprintw( o.window, 0, (@compat round(Int, ( o.width - length(o.title) )/2 )), "%s", o.title )
+        mvwprintw( o.window, 0, (round(Int, ( o.width - length(o.title) )/2 )), "%s", o.title )
     end
     starty = o.borderSizeV
     viewContentHeight = o.height - o.borderSizeV * 2
@@ -261,9 +261,9 @@ function inject( o::TwObj{TwMultiSelectData}, token )
     elseif token == :KEY_MOUSE
         (mstate,x,y, bs ) = getmouse()
         if mstate == :scroll_up
-            dorefresh = moveby( -(@compat round(Int, viewContentHeight/10 )) )
+            dorefresh = moveby( -(round(Int, viewContentHeight/10 )) )
         elseif mstate == :scroll_down
-            dorefresh = moveby( (@compat round(Int, viewContentHeight/10 )) )
+            dorefresh = moveby( (round(Int, viewContentHeight/10 )) )
         elseif mstate == :button1_pressed && o.data.trackLine
             (rely,relx) = screen_to_relative( o.window, y, x )
             if 0<=relx<o.width && 0<=rely<o.height

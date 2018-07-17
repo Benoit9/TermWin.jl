@@ -42,7 +42,7 @@ ctrl-n : move to the next matched item
 ctrl-p : move to the previous matched item
 """
 
-type TwPopupData
+mutable struct TwPopupData
     choices::Array{String,1}
     datalist::Array{Any, 1}
     maxchoicelength::Int
@@ -54,7 +54,7 @@ type TwPopupData
     helpText::String
     TwPopupData( arr::Array{String,1} ) = new( arr, Any[], maximum( map( z->length(z), arr ) ), nothing, 1, 1, 1, 0, "" )
 end
-TwPopupData{ T<:AbstractString}( arr::Array{T, 1 } ) = TwPopupData( map( x-> x , arr ) )
+TwPopupData( arr::Array{T, 1 } ) where { T<:AbstractString} = TwPopupData( map( x-> x , arr ) )
 
 # the ways to use it:
 # standalone panel
@@ -72,10 +72,10 @@ function newTwPopup( scr::TwObj, arr::Array{Symbol,1};
         hideunmatched=hideunmatched,sortmatched=sortmatched,allownew=allownew ) )
 end
 
-function newTwPopup{T<:AbstractString}( scr::TwObj, arr::Array{T,1};
+function newTwPopup( scr::TwObj, arr::Array{T,1};
         posy::Any=:center,posx::Any=:center,
         title = "", maxwidth = 50, maxheight = 15, minwidth = 20,
-        quickselect = false, substrsearch=false, hideunmatched=false, sortmatched=false, allownew=false )
+        quickselect = false, substrsearch=false, hideunmatched=false, sortmatched=false, allownew=false ) where T<:AbstractString
     obj = TwObj( TwPopupData(arr), Val{ :Popup } )
     obj.box = true
     obj.title = title
@@ -135,7 +135,7 @@ function draw( o::TwObj{TwPopupData} )
         box( o.window, 0,0 )
     end
     if !isempty( o.title ) && o.box
-        mvwprintw( o.window, 0, (@compat round(Int, ( o.width - length(o.title) )/2 )), "%s", o.title )
+        mvwprintw( o.window, 0, (round(Int, ( o.width - length(o.title) )/2 )), "%s", o.title )
     end
     starty = o.borderSizeV
     viewContentHeight = o.height - o.borderSizeV * 2
@@ -403,9 +403,9 @@ function inject( o::TwObj{TwPopupData}, token )
     elseif token == :KEY_MOUSE
         (mstate,x,y, bs ) = getmouse()
         if mstate == :scroll_up
-            dorefresh = moveby( -(@compat round(Int, viewContentHeight/10 )) )
+            dorefresh = moveby( -(round(Int, viewContentHeight/10 )) )
         elseif mstate == :scroll_down
-            dorefresh = moveby( @compat round(Int, viewContentHeight/10 ) )
+            dorefresh = moveby( round(Int, viewContentHeight/10 ) )
         elseif mstate == :button1_pressed && o.data.trackLine
             (rely, relx) = screen_to_relative( o.window, y, x )
             if 0<=relx<o.width && 0<=rely<o.height

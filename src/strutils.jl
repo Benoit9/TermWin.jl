@@ -67,7 +67,7 @@ end
 # TODO: test this thoroughly!!
 # Insert a (short) string at the "p" position
 # p is interpreted as the width position
-function insertstring{T<:AbstractString}( s::String, ch::T, p::Int, overwrite::Bool )
+function insertstring( s::String, ch::T, p::Int, overwrite::Bool ) where T<:AbstractString
     wskip = p-1
     local totalskip::Int = 0
     chwidth = strwidth( ch )
@@ -100,7 +100,7 @@ end
 # greedy-skip: all trailing 0 width chars will be skipped
 # greedy-include: all trailing 0-width chars will be included
 # if w is -1, it would take all the rest of the string
-function substr_by_width{T<:AbstractString}( s::T, wskip::Int, w::Int )
+function substr_by_width( s::T, wskip::Int, w::Int ) where T<:AbstractString
     local totalskip::Int = 0
     local totalwidth::Int = 0
     local startidx::Int = -1
@@ -149,7 +149,7 @@ function substr_by_width{T<:AbstractString}( s::T, wskip::Int, w::Int )
     return s[chr2ind(s,startidx):chr2ind(s,endidx)]
 end
 
-function ensure_length{T<:AbstractString}( s::T, w::Int, pad::Bool = true )
+function ensure_length( s::T, w::Int, pad::Bool = true ) where T<:AbstractString
     t = replace( s, "\n", "\\n" )
     t = replace( t, "\t", " " )
     if w <= 0
@@ -158,7 +158,7 @@ function ensure_length{T<:AbstractString}( s::T, w::Int, pad::Bool = true )
     len = strwidth( t )
     if w ==1
         if len > 1
-            return string( @compat Char( 0x2026 ) )
+            return string( Char( 0x2026 ) )
         elseif len==1
             return t
         else
@@ -177,19 +177,19 @@ function ensure_length{T<:AbstractString}( s::T, w::Int, pad::Bool = true )
             return t
         end
     else # ellipsis
-        return substr_by_width( t, 0, w-1 ) * string( @compat Char( 0x2026 ) )
+        return substr_by_width( t, 0, w-1 ) * string( Char( 0x2026 ) )
     end
 end
 
-function wordwrap{T<:AbstractString}( x::T, width::Int )
+function wordwrap( x::T, width::Int ) where T<:AbstractString
     spaceleft = width
     lines = String[]
     currline = convert( T,"" )
-    words = @compat split( x, " ", keep=true ) # don't keep empty words
+    words = split( x, " ", keep=true ) # don't keep empty words
     for w in words
         wlen = strwidth(w)
         if wlen>width && spaceleft == width
-            push!( lines, substr_by_width( w, 0, width-1 ) * string( @compat Char( 0x2026 ) ) )
+            push!( lines, substr_by_width( w, 0, width-1 ) * string( Char( 0x2026 ) ) )
         elseif wlen+1 > spaceleft
             push!( lines, currline )
             currline = w * " "

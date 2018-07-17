@@ -66,14 +66,14 @@ function mvwaddch( w::TwWindow, y::Int, x::Int, c )
     end
 end
 
-function mvwprintw{T<:AbstractString}( win::Ptr{Void}, row::Int, height::Int, fmt::String, str::T )
+function mvwprintw( win::Ptr{Void}, row::Int, height::Int, fmt::String, str::T ) where T<:AbstractString
     ccall( Libdl.dlsym( libncurses, :mvwprintw), Void,
         ( Ptr{Void}, Int, Int, Cstring, Cstring ),
         win, row, height, fmt, str )
 end
 
 # note that it could in turn call another TwWindow...
-function mvwprintw{T<:AbstractString}( w::TwWindow, y::Int, x::Int, fmt::String, s::T )
+function mvwprintw( w::TwWindow, y::Int, x::Int, fmt::String, s::T ) where T<:AbstractString
     if objtype( w.parent.value ) == :List && typeof( w.parent.value.window ) != TwWindow
         # terminal layer. use its pad
         mvwprintw( w.parent.value.data.pad, y+w.yloc, x+w.xloc, fmt, s )
@@ -350,14 +350,14 @@ function getmouse()
     # 17-18th is 0xfffd if mousewheel is pressed down
     ccall( Libdl.dlsym( libncurses, :getmouse), Int, (Ptr{UInt8}, ), mouseByteString )
     bs = mouseByteString
-    x = @compat UInt8(bs[5])
-    y = @compat UInt8(bs[9])
+    x = UInt8(bs[5])
+    y = UInt8(bs[9])
     state=:unknown
-    if (@compat UInt(bs[17])) & 0x02 != 0
+    if (UInt(bs[17])) & 0x02 != 0
         state = :button1_pressed
-    elseif (@compat UInt(bs[19])) & 0x08 != 0
+    elseif (UInt(bs[19])) & 0x08 != 0
         state = :scroll_up
-    elseif (@compat UInt(bs[20])) & 0x08 != 0
+    elseif (UInt(bs[20])) & 0x08 != 0
         state = :scroll_down
     end
     ( state, x, y, bs )

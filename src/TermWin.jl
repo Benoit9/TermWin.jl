@@ -1,23 +1,12 @@
-VERSION >= v"0.4.0-dev+6521" && __precompile__(true)
-
-if VERSION < v"0.4-"
-    if Pkg.installed( "Dates" ) == nothing
-        Pkg.add( "Dates" )
-    end
-end
+__precompile__(true)
 
 module TermWin
 
 using Compat
 using Formatting
 
-if VERSION < v"0.4-"
-    using Dates
-    const fnames = Base.names
-else
-    using Base.Dates
-    const fnames = Base.fieldnames
-end
+using Base.Dates
+const fnames = Base.fieldnames
 
 using DataArrays
 using DataFrames
@@ -34,7 +23,7 @@ function logstart()
     debugloghandle = open( joinpath( Pkg.dir( "TermWin" ), "debug.log" ), "a+" )
 end
 
-function log{T<:AbstractString}( s::T )
+function log( s::T ) where T<:AbstractString
     global debugloghandle
     if debugloghandle != nothing
         write( debugloghandle, string(now()) * " " )
@@ -182,9 +171,9 @@ function initsession()
         wtimeout( rootwin, 100 )
         curs_set( 0 )
         rootTwScreen = newTwScreen( rootwin )
-        msg = string( @compat Char( 0xb83) ) * " TermWin: Please wait ..."
-        mvwprintw( rootwin, (@compat trunc(Int, rootTwScreen.height / 2)),
-            (@compat trunc(Int, ( rootTwScreen.width - length(msg))/2)), "%s", msg)
+        msg = string( Char( 0xb83) ) * " TermWin: Please wait ..."
+        mvwprintw( rootwin, (trunc(Int, rootTwScreen.height / 2)),
+            (trunc(Int, ( rootTwScreen.width - length(msg))/2)), "%s", msg)
         wrefresh( rootwin )
     else
         # in case the terminal has been resized
@@ -225,7 +214,7 @@ function get_acs_val( c::Char )
         ACS_LANTERN = get_acs_val('i') /* lantern symbol */
         ACS_BLOCK = get_acs_val('0') /* solid square block */
     =#
-    acs_map_arr[ (@compat Int( @compat UInt8( c ) )) + 1 ]
+    acs_map_arr[ (Int( UInt8( c ) )) + 1 ]
 end
 
 function endsession()
@@ -252,7 +241,7 @@ function tshow_( x::WeakRef; kwargs... )
     end
 end
 
-function tshow_{T<:AbstractString}( x::T; kwargs... )
+function tshow_( x::T; kwargs... ) where T<:AbstractString
     pos = :center
     if length(x) > 100
         pos = :staggered
@@ -300,7 +289,7 @@ function winnewcenter( ysize, xsize, locy=0.5, locx=0.5 )
     if isa( ysize, Int )
         lines = ysize
     elseif isa( ysize, Float64 ) && 0.0 < ysize <= 1.0
-        lines = @compat Int( maxy * ysize )
+        lines = Int( maxy * ysize )
         if lines == 0
             throw( "lines are too small")
         end
@@ -311,7 +300,7 @@ function winnewcenter( ysize, xsize, locy=0.5, locx=0.5 )
     if isa( xsize, Int )
         cols = xsize
     elseif isa( xsize, Float64 ) && 0.0 < xsize <= 1.0
-        cols = @compat Int( maxx * xsize )
+        cols = Int( maxx * xsize )
         if cols == 0
             throw( "cols are too small")
         end
@@ -322,7 +311,7 @@ function winnewcenter( ysize, xsize, locy=0.5, locx=0.5 )
     if isa( locy, Int )
         origy = max( 0, min( locy, maxy-lines-1 ) )
     elseif isa( locy, Float64 ) && 0.0 <= locy <= 1.0
-        origy = @compat Int( floor( locy * ( maxy - lines ) ) )
+        origy = Int( floor( locy * ( maxy - lines ) ) )
     else
         throw( "illegal locy " * string( locy) )
     end
@@ -330,7 +319,7 @@ function winnewcenter( ysize, xsize, locy=0.5, locx=0.5 )
     if isa( locx, Int )
         origx = max( 0, min( locx, maxx-cols-1 ) )
     elseif isa( locx, Float64 ) && 0.0 <= locx <= 1.0
-        origx = @compat Int( floor( locx * ( maxx - cols ) ) )
+        origx = Int( floor( locx * ( maxx - cols ) ) )
     else
         throw( "illegal locx " * string( locx) )
     end
@@ -467,8 +456,8 @@ function testkeydialog()
     title = "Test Key/Mouse/Unicode"
     keyhint = "[Esc to continue]"
 
-    mvwprintw( win, 0, (@compat Int( (width-length(title))>>1)), "%s", title )
-    mvwprintw( win, 5, (@compat Int( (width-length(keyhint))>>1)), "%s", keyhint )
+    mvwprintw( win, 0, (Int( (width-length(title))>>1)), "%s", title )
+    mvwprintw( win, 5, (Int( (width-length(keyhint))>>1)), "%s", keyhint )
     update_panels()
     doupdate()
     local token
@@ -482,12 +471,12 @@ function testkeydialog()
                 if isprint( c ) && isascii( c )
                     k *= string(c)
                 else
-                    k *= @sprintf( "{%x}", @compat UInt(c))
+                    k *= @sprintf( "{%x}", UInt(c))
                 end
             end
             k = k * repeat( " ", 21-length(k) )
             mvwprintw( win, 1, 2, "%s", k)
-            if 1 <= (@compat UInt64(token[1])) <= 127
+            if 1 <= (UInt64(token[1])) <= 127
                 mvwprintw( win, 2, 2, "%s", "acs_val:        " )
                 mvwaddch( win, 2,11, get_acs_val( token[1] ) )
 

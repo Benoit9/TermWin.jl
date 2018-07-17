@@ -74,22 +74,22 @@ tshow( df;
     colorder = [ :EnrlTot, :Teachers, :Computer, :TestScr, :CompStu, "*" ],
     pivots = [ :County, :top5districts, :District ],
     initdepth = 2,
-    aggrHints = @compat(Dict{Any,Any}(
+    aggrHints = Dict{Any,Any}(
         :TestScr => :( mean( :_, weights(:EnrlTot) ) ),
         :ExpnStu => :( mean( :_, weights(:EnrlTot) ) ),
         :CompStu => :( mean( :_, weights(:EnrlTot) ) ),
         :Str     => :( mean( :_, weights(:EnrlTot) ) )
-        ) ),
-    calcpivots = @compat( Dict{Symbol,Any}(
+        ),
+    calcpivots = Dict{Symbol,Any}(
         :CountyStrBuckets     => CalcPivot( :(discretize( :Str, [ 14,16,18,20,22,24 ], rank = true, compact = true )), :County ),
         :CountyTestScrBuckets => CalcPivot( :(discretize( :TestScr, [ 600, 620, 640, 660, 680, 700],
                                     label = "score", rank = true, compact = false, reverse = true ) ), :County ),
         :top5districts        => CalcPivot( :(topnames( :District, :TestScr, 5 ) ) )
-        ) ),
+        ),
     views = [
-        @compat(Dict{Symbol,Any}( :name => "ByStr",       :pivots => [ :CountyStrBuckets, :County, :District] ) ),
-        @compat(Dict{Symbol,Any}( :name => "ByTestScr",   :pivots => [ :CountyTestScrBuckets, :County, :District] ) ),
-        @compat(Dict{Symbol,Any}( :name => "Top5Schools", :pivots => [ :top5districts, :County ] ) )
+        Dict{Symbol,Any}( :name => "ByStr",       :pivots => [ :CountyStrBuckets, :County, :District] ),
+        Dict{Symbol,Any}( :name => "ByTestScr",   :pivots => [ :CountyTestScrBuckets, :County, :District] ),
+        Dict{Symbol,Any}( :name => "Top5Schools", :pivots => [ :top5districts, :County ] )
     ],
     )
 ```

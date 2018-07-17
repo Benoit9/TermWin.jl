@@ -1,9 +1,5 @@
 using TermWin
-if VERSION < v"0.4-"
-    using Dates
-else
-    using Base.Dates
-end
+using Base.Dates
 
 #TermWin.logstart()
 TermWin.initsession()

@@ -7,13 +7,7 @@
 # The functions are automatically discovered as long as they are either defined in
 # TermWin, or exported to Main.
 
-if VERSION < v"0.4.0-dev+2275"
-    immutable Val{T}
-    end
-    export Val
-end
-
-type TwWindow
+mutable struct TwWindow
     parent::WeakRef # to another TwObj, or nothing
     yloc::Int # 0-based
     xloc::Int
@@ -21,7 +15,7 @@ type TwWindow
     width::Int
 end
 
-type TwObj{T,S}
+mutable struct TwObj{T,S}
     screen::WeakRef # the parent screen
     screenIndex::Int
     window::Union{ Void, Ptr{Void}, TwWindow }
@@ -70,13 +64,13 @@ type TwObj{T,S}
 end
 
 # bookkeeping data for a screen
-type TwScreenData
+mutable struct TwScreenData
     objects::Array{TwObj, 1 }
     focus::Int
     TwScreenData() = new( TwObj[], 0 )
 end
 
-type TwListData
+mutable struct TwListData
     horizontal::Bool
     widgets::Array{TwObj,1} # this is static.
     focus::Int # which of the widgets has the focus
@@ -101,7 +95,7 @@ end
 
 const TwScreen = TwObj{TwScreenData}
 
-function TwObj{T,S}( d::T, ::Type{Val{S}} ) 
+function TwObj( d::T, ::Type{Val{S}} ) where {T,S} 
     return( TwObj{T,S}(d) )
 end
 import Base.show
@@ -127,4 +121,4 @@ function Base.show( io::IO, o::TwObj )
 end
 
 draw( p::TwObj ) = error( string( p ) * " draw is undefined.")
-objtype{T,S}( _::TwObj{T,S} ) = S
+objtype( _::TwObj{T,S} ) where {T,S} = S

@@ -14,18 +14,18 @@ m,M    : add/subtract a month
 q,Q    : add/subtract a quarter
 y,Y    : add/subtract a year
 """
-type TwCalendarData
+mutable struct TwCalendarData
     showHelp::Bool
     helpText::String
     date::Date
     cursorweekofmonth::Int # cached "nth week" in the current month containing date, 1-based
-    geometry::@compat Tuple{Int, Int} # rows x cols in months
+    geometry::Tuple{Int, Int} # rows x cols in months
     ncalStyle::Bool
     TwCalendarData( dt::Date ) = new( true, defaultCalendarHelpText, dt, 1, (1,1), false )
 end
 
 function monthDimension( ncalStyle::Bool )
-    ncalStyle ? ( 8, 3*6-1 ): (8, 3*7+1 )
+    ncalStyle ? ( 8, 3*6-1 ) : (8, 3*7+1 )
 end
 
 function bestfitgeometry( ncalStyle, scr::TwScreen, box::Bool )
@@ -42,8 +42,8 @@ function bestfitgeometry( ncalStyle, scr::TwScreen, box::Bool )
     found = false
     finalg = (0,0,0,0)
     for g in allowed_geometry
-        h::Int = 1+g[1] * monthdim[1] + (box?2:0) # box borders + contents + year title
-        w::Int = leftcols + g[2] * monthdim[2] + (box?2:0)
+        h::Int = 1+g[1] * monthdim[1] + (box ? 2 : 0) # box borders + contents + year title
+        w::Int = leftcols + g[2] * monthdim[2] + (box ? 2 : 0)
         if w <= parmaxx && h <= parmaxy
             found = true
             finalg = (h,w, g[1]::Int, g[2]::Int )
@@ -83,11 +83,11 @@ function draw( o::TwObj{TwCalendarData} )
         box( o.window, 0,0 )
     end
     if !isempty( o.title ) && o.box
-        mvwprintw( o.window, 0, (@compat round( Int, ( o.width - length(o.title) )/2 )), "%s", o.title )
+        mvwprintw( o.window, 0, (round( Int, ( o.width - length(o.title) )/2 )), "%s", o.title )
     end
     starty = o.borderSizeV
     startx = o.borderSizeH
-    mvwprintw( o.window, starty, (@compat round( Int, ( o.width - 4 )/2 )), "%s", string(year(o.data.date)))
+    mvwprintw( o.window, starty, (round( Int, ( o.width - 4 )/2 )), "%s", string(year(o.data.date)))
     starty += 1
     # figure out the start month
     nummonths = o.data.geometry[1] * o.data.geometry[2]
@@ -154,7 +154,7 @@ function draw( o::TwObj{TwCalendarData} )
                 while dt <= men
                     flags = 0
                     if dt == o.data.date
-                        flags = COLOR_PAIR( o.hasFocus ? 15 :30 )
+                        flags = COLOR_PAIR( o.hasFocus ? 15 : 30 )
                         o.data.cursorweekofmonth = wrow + 1
                     end
                     if dt == today()

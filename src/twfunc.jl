@@ -14,7 +14,7 @@ F6         : explore Method as tree
 F8         : edit method
 """
 
-type TwFuncData
+mutable struct TwFuncData
     datalist::Array{Any,1}
     datalistlen::Int
     datawidth::Int
@@ -65,22 +65,22 @@ function newTwFunc( scr::TwObj, ms::Array{Method,1}; kwargs... )
           )
     colorder = extractkwarg!( kwargs, :colorder, [ :name, :sig, :nargs, "*" ] )
     pivots   = extractkwarg!( kwargs, :pivots, [ ] )
-    aggrHints = extractkwarg!( kwargs, :aggrHints, @compat( Dict{Any,Any}(
+    aggrHints = extractkwarg!( kwargs, :aggrHints, Dict{Any,Any}(
         :nargs => :( uniqvalue ),
         :line => :( uniqvalue )
-       ) ) )
-    calcpivots = extractkwarg!( kwargs, :calcpivots, @compat( Dict{Symbol,Any}(
+       ) )
+    calcpivots = extractkwarg!( kwargs, :calcpivots, Dict{Symbol,Any}(
         :NArgsBuckets => CalcPivot( :( discretize( :nargs, [0,1,2,3,4]; boundedness= ^(:boundedbelow) ) ) )
-       )))
+       ))
     initdepth = extractkwarg!( kwargs, :initdepth, 2 )
     views = extractkwarg!( kwargs, :views, [
-        @compat(Dict{Symbol,Any}( :name => "ByName", :pivots => [ :name] ) ),
-        @compat(Dict{Symbol,Any}( :name => "ByNArgs", :pivots => [ :NArgsBuckets ] ) ),
-        @compat(Dict{Symbol,Any}( :name => "By1StArgType", :pivots => [ :arg1t] ) ),
-        @compat(Dict{Symbol,Any}( :name => "By2StArgType", :pivots => [ :arg2t] ) ),
-        @compat(Dict{Symbol,Any}( :name => "By3StArgType", :pivots => [ :arg3t] ) )
+        Dict{Symbol,Any}( :name => "ByName", :pivots => [ :name] ),
+        Dict{Symbol,Any}( :name => "ByNArgs", :pivots => [ :NArgsBuckets ] ),
+        Dict{Symbol,Any}( :name => "By1StArgType", :pivots => [ :arg1t] ),
+        Dict{Symbol,Any}( :name => "By2StArgType", :pivots => [ :arg2t] ),
+        Dict{Symbol,Any}( :name => "By3StArgType", :pivots => [ :arg3t] )
     ] )
-    widthHints = @compat( Dict{Symbol,Int}( :name => 10, :nargs => 5, :sig => 20, :file => 20, :line => 5 ) )
+    widthHints = Dict{Symbol,Int}( :name => 10, :nargs => 5, :sig => 20, :file => 20, :line => 5 )
     obj = newTwDfTable( scr, df; colorder=colorder, pivots=pivots, aggrHints=aggrHints, calcpivots=calcpivots,
         widthHints=widthHints, initdepth=initdepth, views=views, kwargs... )
     obj.value = ms
